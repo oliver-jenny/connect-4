@@ -265,7 +265,7 @@ public class Connect4ArenaMain {
         @Override
         int play() {
             bestMove = null;
-            alphabeta(maxDepth, Integer.MIN_VALUE, Integer.MAX_VALUE, myColor);
+            alphabeta(maxDepth, -10_000_000, 10_000_000, myColor);
             return bestMove;
         }
 
@@ -282,11 +282,12 @@ public class Connect4ArenaMain {
 
             int maxValue = alpha;
             for (Integer move : possibleMoves) {
-                System.out.println("Iterating over move: " + move + " - Color: "+forColor);
                 board[move] = forColor; // make a move
-                int curValue = alphabeta(depth - 1, -maxValue, -beta, forColor.opponent());
+                int curValue = -alphabeta(depth - 1, -beta, -maxValue, forColor.opponent());
                 board[move] = null;
-                if (curValue >= maxValue) {
+                if (depth == this.maxDepth)
+                    System.out.println("move " + move + " has score <=" + curValue);
+                if (curValue > maxValue) {
                     maxValue = curValue;
                     if (depth == this.maxDepth)
                         this.bestMove = move;
