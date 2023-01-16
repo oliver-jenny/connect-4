@@ -1,7 +1,10 @@
 package ch.bbw.m411.connect4;
 
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Scanner;
 
 /**
  * Plays a game of Connect Four on a 4x7 board (a variation of the original 6x7 board).
@@ -16,7 +19,7 @@ public class Connect4ArenaMain {
     static final int NOMOVE = -1;
 
     public static void main(String[] args) {
-        new Connect4ArenaMain().play(new Connect4AlphaBetaPlayer(9), new Connect4AlphaBetaPlayer(10));
+        new Connect4ArenaMain().play(new Connect4AlphaBetaPlayer(13), new Connect4AlphaBetaPlayer(13));
     }
 
     static String toDebugString(Stone[] board) {
@@ -252,6 +255,11 @@ public class Connect4ArenaMain {
         private Integer bestMove = null;
         private final int maxDepth;
 
+        private final static int MAX_REWARD = 10_000_000;
+        private final static int MIN_REWARD = -MAX_REWARD;
+        private final static int WIN_REWARD = 100_000;
+        private final static int LOOSE_REWARD = -WIN_REWARD;
+
         public Connect4AlphaBetaPlayer(int maxDepth) {
             this.maxDepth = maxDepth;
         }
@@ -259,13 +267,13 @@ public class Connect4ArenaMain {
         @Override
         int play() {
             bestMove = 0;
-            alphabeta(maxDepth, -10_000_000, 10_000_000, myColor);
+            alphabeta(maxDepth, MIN_REWARD, MAX_REWARD, myColor);
             return bestMove;
         }
 
         public int alphabeta(int depth, int alpha, int beta, Stone forColor) {
-            if (isWinning(board, forColor.opponent())) return -100_000;
-            if (isWinning(board, forColor)) return 100_000;
+            if (isWinning(board, forColor.opponent())) return LOOSE_REWARD;
+            if (isWinning(board, forColor)) return WIN_REWARD;
 
             if (depth == 0) return rate(forColor);
 
@@ -277,7 +285,7 @@ public class Connect4ArenaMain {
                 board[move] = forColor; // make a move
                 int curValue = -alphabeta(depth - 1, -beta, -maxValue, forColor.opponent());
                 board[move] = null;
-                if (depth == this.maxDepth) System.out.println("move " + move + " has score <=" + curValue);
+                if (depth == this.maxDepth) System.out.printf("move %d has score <= %d%n", move, maxValue);
                 if (curValue > maxValue) {
                     maxValue = curValue;
                     if (depth == this.maxDepth) {
@@ -305,8 +313,6 @@ public class Connect4ArenaMain {
 
         public int rate(Stone stone) {
             int rating = 0;
-            if (isWinning(board, stone)) rating += 100_000;
-            if (isWinning(board, stone.opponent())) rating += -100_000;
             for (int i = 0; i < board.length; i++) {
                 if (board[i] == stone) {
                     switch (i % 7) {
