@@ -68,4 +68,25 @@ class Connect4MainTest implements WithAssertions {
         var blue = new Connect4ArenaMain.Connect4AlphaBetaPlayer(6);
         newInstance().play(red, blue);
     }
+
+    @Test
+    void autobattleHighDepth() {
+        var red = new Connect4ArenaMain.Connect4AlphaBetaPlayer(15);
+        var blue = new Connect4ArenaMain.Connect4AlphaBetaPlayer(15);
+        newInstance().play(red, blue);
+    }
+
+    @Test
+    void autobattleLowDepth() {
+        var red = new Connect4ArenaMain.Connect4AlphaBetaPlayer(1);
+        var blue = new Connect4ArenaMain.Connect4AlphaBetaPlayer(1);
+        newInstance().play(red, blue);
+    }
+
+    @Test
+    void autobattleLowDepthVsHighDepth() {
+        var red = new Connect4ArenaMain.Connect4AlphaBetaPlayer(1);
+        var blue = new Connect4ArenaMain.Connect4AlphaBetaPlayer(15);
+        newInstance().play(red, blue);
+    }
 }
