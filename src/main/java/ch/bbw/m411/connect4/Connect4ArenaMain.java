@@ -264,6 +264,10 @@ public class Connect4ArenaMain {
             this.maxDepth = maxDepth;
         }
 
+        /**
+         * main-function of player - starts and ends the play
+         * @return move to be played
+         */
         @Override
         int play() {
             bestMove = 0;
@@ -271,25 +275,33 @@ public class Connect4ArenaMain {
             return bestMove;
         }
 
+        /**
+         * Alpha-Beta algorithm to calculate the best move possible
+         * @param depth search depth (number of recursive iterations)
+         * @param alpha min value from move
+         * @param beta max value from move
+         * @param forColor color to be played
+         * @return best move-value possible for board
+         */
         public int alphabeta(int depth, int alpha, int beta, Stone forColor) {
-            if (isWinning(board, forColor.opponent())) return LOOSE_REWARD;
-            if (isWinning(board, forColor)) return WIN_REWARD;
+            if (isWinning(board, forColor.opponent())) return LOOSE_REWARD; // Check for loose on play
+            if (isWinning(board, forColor)) return WIN_REWARD; // Check for win on play
 
-            if (depth == 0) return rate(forColor);
+            if (depth == 0) return rate(forColor); // rate board
 
             ArrayList<Integer> possibleMoves = getPossibleMoves(board);
             if (possibleMoves.size() == 0) return 0;  // it's a draw / no moves available
-            int maxValue = alpha;
 
+            int maxValue = alpha;
             for (Integer move : possibleMoves) {
                 board[move] = forColor; // make a move
-                int curValue = -alphabeta(depth - 1, -beta, -maxValue, forColor.opponent());
-                board[move] = null;
+                int curValue = -alphabeta(depth - 1, -beta, -maxValue, forColor.opponent()); // get best value through recursive call
+                board[move] = null; // undo move
                 if (depth == this.maxDepth) System.out.printf("move %d has score <= %d%n", move, maxValue);
                 if (curValue > maxValue) {
-                    maxValue = curValue;
+                    maxValue = curValue; // set new best value
                     if (depth == this.maxDepth) {
-                        this.bestMove = move;
+                        this.bestMove = move; // set new best move
                     }
                     if (maxValue >= beta) break;
 
@@ -298,11 +310,17 @@ public class Connect4ArenaMain {
             return maxValue;
         }
 
+        /**
+         * Gets all moves which can be played
+         * @param myBoard board to check for moves
+         * @return all possible moves on board
+         */
         public ArrayList<Integer> getPossibleMoves(Stone[] myBoard) {
             ArrayList<Integer> possibleMoves = new ArrayList<>();
+            // iterate over all moves
             for (Integer i : List.of(3, 4, 2, 5, 1, 6, 0)) {
-                for (int j = i; j < board.length; j += 7) {
-                    if (myBoard[j] == null) {
+                for (int j = i; j < board.length; j += WIDTH) {
+                    if (myBoard[j] == null) { // if move is not played already, add it to the list of possible moves
                         possibleMoves.add(j);
                         break;
                     }
@@ -311,11 +329,16 @@ public class Connect4ArenaMain {
             return possibleMoves;
         }
 
-        public int rate(Stone stone) {
+        /**
+         * Rates the state of the current board (gives board a value)
+         * @param forColor Color to be checked
+         * @return value of the board
+         */
+        public int rate(Stone forColor) {
             int rating = 0;
-            for (int i = 0; i < board.length; i++) {
-                if (board[i] == stone) {
-                    switch (i % 7) {
+            for (int i = 0; i < board.length; i++) { // go over all moves
+                if (board[i] == forColor) { // check for color of current move is Color of current player (forColor)
+                    switch (i % WIDTH) { // add value based on move
                         case 0, 6 -> rating += 1;
                         case 1, 5 -> rating += 2;
                         case 2, 4 -> rating += 3;
